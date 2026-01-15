@@ -1,15 +1,15 @@
 # Vial: Fixtures, Reinvented
 
-Vial is a Ruby gem for Rails 8.1+ on Ruby 4.0+ that compiles programmable fixture intent into explicit, deterministic fixture files.
+Vial is a Ruby gem for Rails 8.1+ on Ruby 3.4+ that compiles programmable fixture intent into explicit, deterministic fixture files.
 
 ## Requirements
 
-- Ruby 4.0+ (Ruby Box optional via `RUBY_BOX=1`)
+- Ruby 3.4+ (Ruby Box optional via `RUBY_BOX=1`)
 - Rails 8.1+
 
 ## Support Policy
 
-- Ruby 4.0+ only
+- Ruby 3.4+ only
 - Rails 8.1+ only
 - No backward compatibility guarantees for older Ruby/Rails
 
@@ -315,4 +315,4 @@ active_llm_llms:
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
