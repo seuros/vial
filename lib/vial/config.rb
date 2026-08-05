@@ -20,14 +20,22 @@ module Vial
     private
 
     def default_source_paths
-      [Rails.root.join('test/vials')]
+      [app_root.join('test/vials')]
     end
 
     def default_output_path
       fixture_paths = Array(ActiveSupport::TestCase.fixture_paths).compact
       return fixture_paths.first if fixture_paths.any?
 
-      Rails.root.join('test/fixtures')
+      app_root.join('test/fixtures')
+    end
+
+    # Rails is optional for the core compiler; fall back to the working
+    # directory in plain Ruby projects.
+    def app_root
+      return Rails.root if defined?(Rails) && Rails.respond_to?(:root) && Rails.root
+
+      Pathname.new(Dir.pwd)
     end
   end
 end
