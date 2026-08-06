@@ -67,7 +67,10 @@ Example `test/vials/users.vial.rb`:
 
 ```ruby
 vial :users do
+  sequence(:email) { |i| "user#{i}@test.local" }
+
   base do
+    email sequence(:email)
     active true
     country "MA"
   end
@@ -81,8 +84,6 @@ vial :users do
     active false
   end
 
-  sequence(:email) { |i| "user#{i}@test.local" }
-
   generate 10, :admin
   generate 50, :guest
 end
@@ -90,9 +91,17 @@ end
 
 Output: `test/fixtures/users.yml` with deterministic IDs and explicit records.
 
+Note: `sequence(:name) { ... }` only defines a sequence. It applies to records
+when an attribute references it — `email sequence(:email)` inside `base` or a
+variant. The compiler warns about sequences that are defined but never referenced.
+
 ### Global Validation
 
 `vial:compile` validates the entire dataset before writing any fixtures. Any collision or duplicate label fails the compile with a precise error.
+
+IDs are namespaced per `record_type` (one namespace per table): fixtures for
+different tables may share numeric IDs, and collisions are only errors within
+the same record type.
 
 ### Composition
 
@@ -148,6 +157,10 @@ vial :users do
   generate 1
 end
 ```
+
+Explicit and derived IDs share one namespace per `record_type`, so two vials
+targeting the same table cannot collide, while vials for different tables can
+reuse the same numbers freely.
 
 Explain a derived ID:
 

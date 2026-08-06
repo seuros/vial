@@ -67,17 +67,21 @@ module Vial
     end
 
     def assign_and_validate_ids!
+      # IDs are namespaced per record_type: fixtures for different tables can
+      # share numeric IDs, collisions only matter within one record type.
       used_ids = {}
       all_records.each do |record|
         explicit = explicit_id_for(record)
         next unless explicit
 
         id_value = explicit[:value]
-        if (existing = used_ids[id_value])
+        id_key = id_key_for(record, id_value)
+        if (existing = used_ids[id_key])
           raise ValidationError.new(
             'ExplicitIDCollision',
             [
               "ID: #{id_value.inspect}",
+              "record_type: #{record.definition.record_type}",
               record_descriptor(existing[:record], existing[:source_file], existing[:source_line]),
               record_descriptor(record, explicit[:source_file], explicit[:source_line])
             ]
@@ -85,7 +89,7 @@ module Vial
         end
 
         record.attributes[record.definition.primary_key] = id_value
-        used_ids[id_value] = { explicit: true, record: record, source_file: explicit[:source_file], source_line: explicit[:source_line] }
+        used_ids[id_key] = { explicit: true, record: record, source_file: explicit[:source_file], source_line: explicit[:source_line] }
       end
 
       derived_records = all_records.reject { |record| record.attributes.key?(record.definition.primary_key) }
@@ -106,10 +110,11 @@ module Vial
           salt: attempts
         )
 
-        existing = used_ids[id_value]
+        id_key = id_key_for(record, id_value)
+        existing = used_ids[id_key]
         if existing.nil?
           record.attributes[record.definition.primary_key] = id_value
-          used_ids[id_value] = { explicit: false, record: record }
+          used_ids[id_key] = { explicit: false, record: record }
           return
         end
 
@@ -139,6 +144,10 @@ module Vial
           "source: #{format_source(record.source_file, record.source_line)}"
         ].compact
       )
+    end
+
+    def id_key_for(record, id_value)
+      [record.definition.record_type, id_value]
     end
 
     def explicit_id_for(record)

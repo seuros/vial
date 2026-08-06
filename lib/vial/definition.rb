@@ -140,7 +140,24 @@ module Vial
       @sequence_defs
     end
 
+    # Sequences defined with a block but never consumed via
+    # `attr sequence(:name)` in base or a variant. Defining one without
+    # referencing it is a silent no-op, so the compiler warns about these.
+    def unused_sequence_names
+      return [] if abstract?
+
+      referenced = sequence_refs_in(resolved_base_attributes)
+      @variant_attributes.each_value do |attrs|
+        referenced |= sequence_refs_in(attrs)
+      end
+      @sequence_defs.keys - referenced
+    end
+
     private
+
+    def sequence_refs_in(attributes)
+      attributes.values.filter_map { |value| value.name if value.is_a?(SequenceRef) }
+    end
 
     def parse_generation_args(*args, **kwargs)
       if args.length == 0

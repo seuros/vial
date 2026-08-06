@@ -29,6 +29,8 @@ module Vial
         return CompileResult.new(status: :no_definitions, files: [], output_path: @output_path.to_s)
       end
 
+      warn_about_unused_sequences(definitions)
+
       records_by_definition = definitions.each_with_object([]) do |definition, entries|
         next if definition.abstract?
         entries << { definition: definition, records: definition.build_records }
@@ -90,6 +92,15 @@ module Vial
     end
 
     private
+
+    def warn_about_unused_sequences(definitions)
+      definitions.each do |definition|
+        definition.unused_sequence_names.each do |name|
+          warn "Vial: sequence :#{name} in vial :#{definition.name} is defined but never referenced " \
+               "(use `#{name} sequence(:#{name})` inside base or a variant)"
+        end
+      end
+    end
 
     def write_fixture(definition, records)
       file_path = File.join(@output_path.to_s, "#{definition.name}.yml")
